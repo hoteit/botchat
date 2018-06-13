@@ -1,0 +1,166 @@
+<html>
+    <head>
+        <title>Bot Chat 2.0</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+       <style>
+       	  body {
+       	  	margin: 20px;
+       	  }
+       </style>
+    </head>
+    <body>
+        <div>
+            <h1><a href="/">BotChat 2.0 {{ data }}</a></h1>
+        </div>
+
+        <div style="height:250px; overflow:auto;">
+	{% for post in posts %}
+            <div>
+                <p><b>Name: </b>{{ post.name }}</p>
+                <p><b>Issue Or Change:</b> {{ post.issue_or_change }}</p>
+                <p><b>Full Note:</b> {{ post.full_note }}</p>
+                <p><b>Date:</b> {{ post.date_field }}</p>
+                <br /> <br />
+            </div>
+        {% endfor %}
+
+        </div>
+
+        <div id="NewDataArea" style="height:250px;"></div>
+
+
+        {% block content %}
+            <form method="POST" id="ChatBotForm" class="post-form">{% csrf_token %}
+            	<table width="50%" align="left" id="ChatBotArea">
+                <tr>
+                <td id="QArea"> Hi, What is your name? </td>
+                </tr>
+                <tr>
+                <td> <br /> </td>
+                </tr>
+                <tr><td>
+                <input type="text" name="name" style="width:100%; height:35px;" id="id_name">
+				<input type="text" name="issue_or_change" style="width:100%; height:35px; display:none;" required id="id_issue_or_change">
+                <input type="text" name="full_note" style="width:100%;display:none; height:35px;" required id="id_full_note">
+                <input type="text" name="processed_note" style="width:100%;display:none; height:35px;" id="id_processed_note">
+                <input type="text" style="width:100%;display:none; height:35px;" id="q_four">
+                <input type="hidden" name="dc" value=10000 id="id_dc" />
+                <input type="text" name="date_field" style="width:100%;display:none; height:35px;" required id="id_date_field"></p>
+                </td></td>
+                </table>
+            </form>
+        {% endblock %}
+        <input type="hidden" value="" name="xy">
+    </body>
+</html>
+
+<script type="application/javascript">
+$(document).keypress(function(e) {
+    if(e.which == 13) {
+        if($("#id_name").is(":hidden") == false){
+			if($("#id_name").is(":focus")){
+				$("#NewDataArea").append("<p><b> Hi, What is your name?  </b><br /> " + $("#id_name").val() + " </p>");
+				$("#id_name").hide();
+				$("#id_issue_or_change").show();
+				$("#id_issue_or_change").focus();
+				$("#QArea").html('');
+				$("#QArea").html('Issue Or Change? ');
+			}else{
+				$("#id_name").focus();
+			}
+		}else if($("#id_issue_or_change").is(":hidden") == false){
+			if($("#id_issue_or_change").is(":focus")){
+				$("#NewDataArea").append("<p><b> Issue Or Change? </b><br /> " +$("#id_issue_or_change").val().toLowerCase() + " </p>");
+				$("#id_issue_or_change").hide();
+				$("#id_full_note").show();
+				$("#id_full_note").focus();
+				$("#QArea").html('');
+				$("#QArea").html('Please describe the ' + $("#id_issue_or_change").val().toLowerCase()+' (Include the date, time and reference id)');
+			}else{
+				$("#id_issue_or_change").focus();
+			}
+		}else if($("#id_full_note").is(":hidden") == false){
+			if($("#id_full_note").is(":focus")){
+				$("#NewDataArea").append("<p><b> Please describe the </b>" + $("#id_issue_or_change").val().toLowerCase().bold()+ "<br>" +  $("#id_full_note").val()+ " </p>");
+				$("#id_full_note").hide();
+				$("#q_four").show();
+				$("#q_four").focus();
+				$("#QArea").html('');
+				var myDate = new Date();
+        var text = $('#id_full_note').val()
+
+        function csrfSafeMethod(method) {
+          // these HTTP methods do not require CSRF protection
+          return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+
+        var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+        $.ajaxSetup({
+          beforeSend: function(xhr, settings) {
+              if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", csrftoken);
+              }
+          }
+        });
+
+
+        $.ajax({
+          method: 'POST',
+          url: '{% url "ajax_dateparse" %}',
+          dataType: 'json',
+          data: {
+              'text': text,
+          },
+          success: function (data) {
+            $('input[name=xy]').val(data.content)
+            var generated_date = $('input[name=xy]').val()
+            var monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November","December"];
+            $("#QArea").html('To confirm, this ' + $("#id_issue_or_change").val().toLowerCase()+ ' occured on ' + generated_date +  ' (Yes or No)');
+
+          },
+
+          error: function (data) {
+            alert('error..')
+          },
+        })
+
+			}else{
+				$("#id_full_note").focus();
+			}
+		}else if($("#q_four").is(":hidden") == false){
+      var generated_date = $('input[name=xy]').val()
+			if($("#q_four").is(":focus")){
+				var myDate = new Date();
+				var monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November","December"];
+				$("#NewDataArea").append('<p><b> To confirm, this ' + $("#id_issue_or_change").val().toLowerCase() + ' occured on ' + generated_date + "</b><br>" +  $("#q_four").val() + ' </p>');
+				$("#q_four").hide();
+				if($("#q_four").val().toLowerCase().includes('yes')){
+					$("#id_date_field").val(monthNames[parseInt(myDate.getMonth())] + ' ' + parseInt(myDate.getDay()) + ' ' +  myDate.getFullYear());
+					document.getElementById("id_dc").value = "100000";
+
+					$("#ChatBotForm").submit();
+				}else{
+					$("#q_four").hide();
+					$("#id_date_field").show();
+					$("#id_date_field").focus();
+					$("#QArea").html('');
+					$("#QArea").html('Please Enter the Correct Date and Time');
+				}
+			}else{
+				$("#q_four").focus();
+			}
+		}else if($("#id_date_field").is(":hidden") == false){
+			if($("#id_date_field").is(":focus")){
+				document.getElementById("id_dc").value = "0";
+				$("#ChatBotForm").submit();
+			}else{
+				$("#id_date_field").focus();
+			}
+		}
+
+    }
+});
+</script>

@@ -1,0 +1,5 @@
+django
+parsedatetime
+nltk
+stop_words
+
