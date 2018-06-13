@@ -1,1 +1,1 @@
-## chat bot for keeping track of changes. Developer: Sameer Naqvi , Mentor: Tarek Hoteit
+## chat bot for keeping track of changes. Developer: Samir Naqvi , Mentor: Tarek Hoteit
