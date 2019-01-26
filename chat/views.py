@@ -57,7 +57,7 @@ def finparser(time_string):
     dic={}
     dic['raw']=time_string
     dic['date']=dateparser(time_string)
-    id=re.findall(r'[A-Z]{2,5}[0-9]{3}[0-9]*', time_string)
+    id=re.findall(r'[A-Z,a-z]{2,5}[0-9]{3}[0-9]*', time_string)
     if(len(id)==0):
         dic['id']='NA'
     else:
@@ -68,7 +68,7 @@ def finparser(time_string):
     add_words=['i',':','one','two','three','four','five','six','seven','pm','ago','day','days','am','.',',','eight','nine', 'ten','hour','hours','min','mins','minute','minutes','second','seconds','yday','ysterday','yesterday','morning','afternoon','night','evening','today','tomorrow','tommorrow','noon','midnight','next','week','weeks','month','months','year','years','ago','monday','tuesday','wednesday','right','thursday','friday','saturday','sunday']
     stop_words.extend(nltk_words)
     stop_words.extend(add_words)
-    time_string=re.sub(r'[A-Z]{2,5}[0-9]{3}[0-9]*','',time_string)
+    time_string=re.sub(r'[A-Z,a-z]{2,5}[0-9]{3}[0-9]*','',time_string)
     time_string=re.sub(r'[0-9]*','',time_string)
     dic['processed']=[w for w in strip_punctuation(time_string).lower().split() if not w in stop_words]
     dic['processed']=' '.join(dic['processed'])
